@@ -1,11 +1,21 @@
 # Singapore Math Learning Hub
 
-Aplikasi belajar Singapore Math satu halaman (`index.html`, React + CSS inline, tanpa build step).
+Aplikasi statis (`index.html`, tanpa build step). Progress disimpan di `localStorage` dan, setelah login, disinkronkan ke Supabase.
 
-## Menjalankan
-Buka `index.html` di browser, atau aktifkan GitHub Pages (Settings → Pages → Deploy from branch `main` / root).
+## Setup Supabase
+1. Buat project di https://supabase.com.
+2. SQL Editor → jalankan isi `supabase/schema.sql` (tabel `progress` + Row Level Security).
+3. Authentication → Providers: pastikan **Email** aktif (magic link).
+4. Authentication → URL Configuration: isi **Site URL** dengan URL Vercel Anda, dan tambahkan URL tersebut ke **Redirect URLs** (juga `http://localhost:3000` untuk uji lokal).
+5. Project Settings → API: salin **Project URL** dan **anon key** ke `config.js`.
 
-## Penyimpanan progress
-- Progress dan catatan disimpan di `localStorage` browser (per perangkat).
-- Jika dibuka di claude.ai sebagai artifact, data juga disinkronkan ke database akun pengguna.
-- Di luar claude.ai (mis. GitHub Pages) hanya `localStorage` yang aktif; gunakan fitur backup JSON untuk pindah perangkat.
+## Deploy ke Vercel
+1. vercel.com → Add New → Project → impor repo ini.
+2. Framework Preset: **Other**; Build Command dan Output Directory dibiarkan kosong (root statis).
+3. Deploy. Setiap push ke `main` akan otomatis ter-deploy.
+
+## Cara kerja sinkronisasi
+- Tanpa login: hanya `localStorage` (per perangkat).
+- Setelah login (link masuk lewat email): dokumen `state`, `notes`, `journal` di-upsert ke tabel `progress`; versi dengan `updatedAt` terbaru menang.
+- Adapter ada di `supabase-shim.js`; aplikasi utama tidak diubah.
+- Backup/restore JSON di aplikasi tetap berfungsi.
